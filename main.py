@@ -1,22 +1,20 @@
 from pynput import keyboard
-import pynput
 import pyperclip
-from string import Template
 import httpx
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+# Logging Configs
+logging.basicConfig(level=logging.DEBUG, filename='log.txt', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-controller = keyboard.Controller()
-
+# LLM Constants
 PROMPT_TEMPLATE = Template(
     """
     Fix All the typos, capitalization, grammar errors, and casing in the following text
-    but preserve all new line characters and extra spaces and other formatting characters.
+    but preserve all newline characters, extra spaces and other formatting characters.
     
     $text
     
-    Return only the corrected text, don't include the preamble.
+    Return only the corrected text, excluding the preamble.
     """
 )
 
@@ -27,23 +25,30 @@ LLM_CONFIG = {
     "stream": False,
 }
 
+# Logging instance
+logger = logging.getLogger(__name__)
+
 def process_text(text):
     prompt = PROMPT_TEMPLATE.substitute(text=text)
     
-    response = httpx.post(
-        LLM_ENDPOINT,
-        json={"prompt": prompt, **LLM_CONFIG},
-        header={"Connection-Type": "Keep-alive",
-                "Content-Type": "application/json"
-                    }
-    )
-    if not response.status_code == 200:
-        msg = f"Unable to connect to LLM endpoint. Status code: {response.status_code}"
-        log.warning(msg)
-        return text
-    
-    return response.json()["text"].strip()
+    try:
+        response = httpx.post(
+            LLM_ENDPOINT,
+            json={"prompt": prompt, **LLM_CONFIG},
+            header={"Connection-Type": "Keep-alive",
+                    "Content-Type": "application/json"
+                        }
+        )
+        response.raise_for_status()
+        return response.json()["text"].strip()
+    except httpx.HTTPError as http_err:
+        logger.error(f"HTTP error occured Connecting to the LLM Endpoint: {http_err}")
+    except Exception as e:
+        logger.error(f"An Error occured Connecting to the LLM Endpoint: {e}")
+    return text
 
+
+controller = keyboard.Controller()
 
 def selected_text():
     with (controller.pressed(keyboard.Key.ctrl)):
