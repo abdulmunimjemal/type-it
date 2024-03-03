@@ -1,11 +1,43 @@
 from pynput import keyboard
 import pynput
 import pyperclip
+from string import Template
+import httpx
 
 controller = keyboard.Controller()
 
+PROMPT_TEMPLATE = Template(
+    """
+    Fix All the typos, capitalization, grammar errors, and casing in the following text
+    but preserve all new line characters and extra spaces and other formatting characters.
+    
+    $text
+    
+    Return only the corrected text, don't include the preamble.
+    """
+)
+
+LLM_ENDPOINT = "http://localhost:11434/api/generate"
+LLM_CONFIG = {
+    "model": "gemma:2b-instruct-q4_K_S",
+    "keepalive": "10m",
+    "stream": False,
+}
+
 def process_text(text):
-    return text[::-1]
+    prompt = PROMPT_TEMPLATE.substitute(text=text)
+    
+    response = httpx.post(
+        LLM_ENDPOINT,
+        json={"prompt": prompt, **LLM_CONFIG},
+        header={"Connection-Type": "Keep-alive",
+                "Content-Type": "application/json"
+                    }
+    )
+    if not response.status_code == 200:
+        return text
+    
+    return response.json()["text"].strip()
 
 
 def selected_text():
