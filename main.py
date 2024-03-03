@@ -2,7 +2,7 @@ from pynput import keyboard
 import pyperclip
 import httpx
 import logging
-
+from string import Template
 # Logging Configs
 logging.basicConfig(level=logging.DEBUG, filename='log.txt', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -35,7 +35,7 @@ def process_text(text):
         response = httpx.post(
             LLM_ENDPOINT,
             json={"prompt": prompt, **LLM_CONFIG},
-            header={"Connection-Type": "Keep-alive",
+            headers={"Connection-Type": "Keep-alive",
                     "Content-Type": "application/json"
                         }
         )
@@ -81,5 +81,5 @@ line_shortcut = str(keyboard.Key.f10.value) # F10
 
 with keyboard.GlobalHotKeys({
         selected_shortcut: selected_text,
-        line_shortcut: line_shortcut}) as h:
+        line_shortcut: line_text}) as h:
     h.join()
