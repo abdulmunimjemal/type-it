@@ -3,6 +3,9 @@ import pynput
 import pyperclip
 from string import Template
 import httpx
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 controller = keyboard.Controller()
 
@@ -35,6 +38,8 @@ def process_text(text):
                     }
     )
     if not response.status_code == 200:
+        msg = f"Unable to connect to LLM endpoint. Status code: {response.status_code}"
+        log.warning(msg)
         return text
     
     return response.json()["text"].strip()
