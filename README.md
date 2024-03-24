@@ -4,7 +4,7 @@ Automatically correct typos, capitalization, grammar errors, and casing using a 
 
 # Features
 
-- **Offline AI Correction**: Leverages a local large language model (LLM) for real-time text correction, no internet connection required.
+- **Offline AI Correction**: Leverages a local large language model (LLM) for real-time text correction, no internet connection is required.
 - **Hotkey Integration**: Trigger text correction seamlessly using F9 (for selected text) and F10 (for the current line).
 - **Clipboard Interaction**: Copies corrected text to the clipboard for effortless pasting.
 - **Customizable**: Potentially adapt to different LLM endpoints and models for specific needs.
